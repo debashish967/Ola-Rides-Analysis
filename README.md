@@ -1,27 +1,30 @@
-# 🚖 Ola Rides Analysis Dashboard
+🎯 Business Use Cases
 
-## 📌 Project Overview
-This project analyzes **Ola ride-sharing data** to uncover insights about ride performance, cancellations, customer/driver behavior, and revenue.  
-The goal is to provide **business use cases** and **actionable recommendations** for operational improvement.
+Understand ride success vs. cancellations and reasons behind cancellations.
 
-## 🎯 Business Use Cases
-- Understand **ride success vs. cancellations** and reasons behind cancellations.
-- Analyze **driver & customer ratings** to measure satisfaction.
-- Track **revenue trends** and **top customers**.
-- Identify **high-cancellation zones** and demand hotspots.
-- Provide **recommendations for improving efficiency** and customer experience.
+Analyze driver & customer ratings to measure satisfaction.
 
-## 🛠️ Approach
-1. **Data Cleaning** → Cleaned raw rides data → `rides_cleaned.csv`
-2. **EDA (20 analyses)** → Key metrics, cancellations, revenue, hotspots, trends.
-3. **SQL Queries (10 queries)** → Customer patterns, driver issues, payment modes.
-4. **Visualization**  
-   - 📊 **Power BI Dashboard** ([View here](https://app.powerbi.com/view?r=eyJrIjoiYjdiZmVhOWMtYjY3Zi00Nzc0LWFlZWItN2Q0N2M2NjYyNDIzIiwidCI6ImZlM2I0ZGI2LWYzOGUtNDQ4Ni1hZTkwLTU3OGFmM2E1YTM4OCJ9))  
-   - 🌐 **Streamlit App** (interactive web app with KPIs, EDA, SQL, BI, and Insights)
-5. **Insights & Recommendations** → Expanded with charts and crisp recommendations.
+Track revenue trends and identify top customers.
 
-## 🚀 Streamlit App
-Run locally:
-```bash
-pip install -r requirements.txt
-streamlit run app.py
+Detect high-cancellation zones and demand hotspots.
+
+Provide recommendations for improving efficiency and customer experience.
+
+🛠️ Approach
+
+Data Cleaning → Processed raw rides data into rides_cleaned.csv.
+
+Outlier Removal → Removed extreme values (e.g., booking value, ride distance, and ratings anomalies) to improve data reliability.
+
+EDA (20 analyses) → Key metrics, cancellations, revenue, hotspots, weekly/daily trends.
+
+SQL Queries (10 queries) → Analyzed customer patterns, driver issues, and payment behaviors from ola_rides.db.
+
+Visualization
+
+📊 Power BI Dashboard (View here
+)
+
+🌐 Streamlit App (interactive web app with KPIs, EDA, SQL, BI, and Insights).
+
+Insights & Recommendations → Expanded with 10+ charts and crisp recommendations.

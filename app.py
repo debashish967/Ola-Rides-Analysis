@@ -9,7 +9,7 @@ import plotly.express as px
 # File Paths
 # -----------------------
 DB_PATH = "ola_rides.db"
-CSV_PATH = "rides_cleaned.csv"
+CSV_PATH = "rides_no_outliers.csv"
 LOGO_PATH = "images/ola-logo.png"
 
 # -----------------------
@@ -70,13 +70,29 @@ if page == "Home":
 elif page == "Exploratory Data Analysis":
     st.header("📊 Exploratory Data Analysis")
 
+    # KPI Summary
+    st.subheader("📌 KPI Summary")
+    st.write("""
+    - **Total Rides:** 99,109  
+    - **Successful Rides:** 61,515  
+    - **Success Rate:** 62.07%  
+    - **Total Cancellations:** 37,594 (37.93%)  
+    - **Avg Fare (Success):** ₹467.37  
+    - **Median Fare (Success):** ₹374.0  
+    - **Avg Distance (Success):** 22.86 km  
+    - **Avg Driver Rating:** 4.0  
+    - **Avg Customer Rating:** 4.0
+    """)
+
+
     # 1. Rides by Vehicle Type
     vc1 = df_filtered["Vehicle_Type"].value_counts().reset_index()
     vc1.columns = ["Vehicle_Type", "count"]
     fig1 = px.bar(vc1, x="Vehicle_Type", y="count", title="Rides by Vehicle Type",
                   labels={"Vehicle_Type": "Vehicle Type", "count": "Number of Rides"})
     st.plotly_chart(fig1, use_container_width=True)
-    st.caption("🔎 Insight: Autos and Bikes dominate total rides.")
+    st.caption("🔎 Insight: eBikes, Autos, and Prime vehicles account for most rides; Mini and Bike have slightly lower usage.")
+
 
     # 2. Daily Booking Trend
     daily_booking = df_filtered.groupby("Date")["Booking_ID"].count().reset_index()
@@ -84,48 +100,57 @@ elif page == "Exploratory Data Analysis":
     fig2 = px.line(daily_booking, x="Date", y="count", title="Daily Booking Trend",
                    labels={"count": "Number of Rides"})
     st.plotly_chart(fig2, use_container_width=True)
-    st.caption("🔎 Insight: Ride demand fluctuates with clear weekday peaks.")
+    st.caption("🔎 Insight: Ride demand peaks mid-week and drops slightly on weekends, showing weekday dominance.")
+
 
     # 3. Payment Method Distribution
     pm = df_filtered["Payment_Method"].value_counts().reset_index()
     pm.columns = ["Payment_Method", "count"]
     fig3 = px.pie(pm, names="Payment_Method", values="count", title="Payment Method Distribution")
     st.plotly_chart(fig3, use_container_width=True)
-    st.caption("🔎 Insight: UPI and Cash dominate payment preferences.")
+    st.caption("🔎 Insight: UPI and Cash are the most popular payment methods; Credit Card usage is moderate and Not Applicable occurs for canceled/incomplete rides.")
+
 
     # 4. Booking Value by Vehicle Type
     fig4 = px.box(df_filtered, x="Vehicle_Type", y="Booking_Value", title="Booking Value by Vehicle Type")
     st.plotly_chart(fig4, use_container_width=True)
-    st.caption("🔎 Insight: Prime Sedan and SUVs have higher fare distribution.")
+    st.caption("🔎 Insight: Prime Sedan, Prime SUV, and Mini vehicles generate higher fares compared to Bikes and Autos.")
+
 
     # 5. Customer Rating Distribution
     fig5 = px.histogram(df_filtered, x="Customer_Rating", nbins=20, title="Distribution of Customer Ratings")
     st.plotly_chart(fig5, use_container_width=True)
-    st.caption("🔎 Insight: Most customers give ratings between 3.5 and 4.5.")
+    st.caption("🔎 Insight: Majority of customers rate rides around 4.0, with fewer extreme low/high ratings.")
+
 
     # 6. Driver Ratings Distribution
     fig6 = px.histogram(df_filtered, x="Driver_Ratings", nbins=20, title="Distribution of Driver Ratings")
     st.plotly_chart(fig6, use_container_width=True)
-    st.caption("🔎 Insight: Driver ratings are skewed towards positive values.")
+    st.caption("🔎 Insight: Most drivers have ratings around 4.0, indicating consistent positive feedback from customers.")
+
+
 
     # 7. Rides by Day of Week
     vc2 = df_filtered["Day_of_Week"].value_counts().reset_index()
     vc2.columns = ["Day_of_Week", "count"]
     fig7 = px.bar(vc2, x="Day_of_Week", y="count", title="Rides by Day of Week")
     st.plotly_chart(fig7, use_container_width=True)
-    st.caption("🔎 Insight: Weekdays have higher ride demand compared to weekends.")
+    st.caption("🔎 Insight: Fridays and weekdays see the highest ride demand, while weekends are slightly lower.")
+
 
     # 8. Rides by Hour
     vc3 = df_filtered["Ride_Hour"].value_counts().reset_index()
     vc3.columns = ["Ride_Hour", "count"]
     fig8 = px.bar(vc3.sort_values("Ride_Hour"), x="Ride_Hour", y="count", title="Rides by Hour of Day")
     st.plotly_chart(fig8, use_container_width=True)
-    st.caption("🔎 Insight: Ride demand peaks during morning and evening commute hours.")
+    st.caption("🔎 Insight: Peak ride demand occurs during morning (8–10 AM) and evening (5–8 PM) commute hours.")
+
 
     # 9. Ride Distance Distribution
     fig9 = px.histogram(df_filtered, x="Ride_Distance", nbins=50, title="Ride Distance Distribution")
     st.plotly_chart(fig9, use_container_width=True)
-    st.caption("🔎 Insight: Majority of rides are short distance trips.")
+    st.caption("🔎 Insight: Most rides are short to medium distance; long-distance trips are rare.")
+
 
     # 10. Cancellations Over Time
     cancel_trend = df_filtered[df_filtered["Booking_Status"].str.contains("Canceled")]
@@ -133,72 +158,84 @@ elif page == "Exploratory Data Analysis":
     cancel_daily.columns = ["Date", "count"]
     fig10 = px.line(cancel_daily, x="Date", y="count", title="Daily Cancellations Trend")
     st.plotly_chart(fig10, use_container_width=True)
-    st.caption("🔎 Insight: Cancellations follow overall demand trends.")
+    st.caption("🔎 Insight: Cancellations correlate with ride volume; more rides result in more cancellations, with driver and customer contributions visible.")
+
 
     # 11. Top Pickup Locations
     vc4 = df_filtered["Pickup_Location"].value_counts().head(10).reset_index()
     vc4.columns = ["Pickup_Location", "count"]
     fig11 = px.bar(vc4, x="Pickup_Location", y="count", title="Top 10 Pickup Locations")
     st.plotly_chart(fig11, use_container_width=True)
-    st.caption("🔎 Insight: Few hotspots account for bulk of ride pickups.")
+    st.caption("🔎 Insight: Vijayanagar, Tumkur Road, Whitefield, and Banashankari are the busiest pickup locations.")
+
 
     # 12. Top Drop Locations
     vc5 = df_filtered["Drop_Location"].value_counts().head(10).reset_index()
     vc5.columns = ["Drop_Location", "count"]
     fig12 = px.bar(vc5, x="Drop_Location", y="count", title="Top 10 Drop Locations")
     st.plotly_chart(fig12, use_container_width=True)
-    st.caption("🔎 Insight: Drop locations overlap with key pickup hotspots.")
+    st.caption("🔎 Insight: Key drop locations mirror pickup hotspots, indicating concentrated ride demand in main city areas.")
+
 
     # 13. Booking Value Trend
     daily_value = df_filtered.groupby("Date")["Booking_Value"].sum().reset_index()
     daily_value.columns = ["Date", "total_value"]
     fig13 = px.line(daily_value, x="Date", y="total_value", title="Daily Booking Value Trend")
     st.plotly_chart(fig13, use_container_width=True)
-    st.caption("🔎 Insight: Revenue follows demand cycles with weekday peaks.")
+    st.caption("🔎 Insight: Revenue peaks mid-week, dips on certain days, following ride volume trends.")
+
 
     # 14. Average Ride Distance per Vehicle Type
     avg_dist = df_filtered.groupby("Vehicle_Type")["Ride_Distance"].mean().reset_index()
     fig14 = px.bar(avg_dist, x="Vehicle_Type", y="Ride_Distance", title="Average Ride Distance by Vehicle Type")
     st.plotly_chart(fig14, use_container_width=True)
-    st.caption("🔎 Insight: Cars (Mini, Sedan, SUV) have longer average rides than Autos.")
+    st.caption("🔎 Insight: Mini, Prime Sedan, and SUVs cover longer average distances compared to Bikes and eBikes.")
+
 
     # 15. Average Customer Rating by Vehicle Type
     avg_rating = df_filtered.groupby("Vehicle_Type")["Customer_Rating"].mean().reset_index()
     fig15 = px.bar(avg_rating, x="Vehicle_Type", y="Customer_Rating", title="Avg Customer Rating by Vehicle Type")
     st.plotly_chart(fig15, use_container_width=True)
-    st.caption("🔎 Insight: Prime Plus and Prime Sedan achieve slightly better ratings.")
+    st.caption("🔎 Insight: Prime Plus, Prime Sedan, and SUVs receive slightly higher average customer ratings than other vehicle types.")
+
 
     # 16. Customer Cancellations by Location
     cust_cancel = df_filtered[df_filtered["Booking_Status"]=="Canceled by Customer"]["Pickup_Location"].value_counts().head(10).reset_index()
     cust_cancel.columns = ["Pickup_Location", "count"]
     fig16 = px.bar(cust_cancel, x="Pickup_Location", y="count", title="Top Customer Cancellation Locations")
     st.plotly_chart(fig16, use_container_width=True)
-    st.caption("🔎 Insight: Cancellations cluster around high-demand pickup zones.")
+    st.caption("🔎 Insight: Customers mostly cancel rides from busy pickup areas such as Vijayanagar, Tumkur Road, and Whitefield.")
+
 
     # 17. Booking Value vs Distance
     fig17 = px.scatter(df_filtered, x="Ride_Distance", y="Booking_Value", title="Booking Value vs Ride Distance", opacity=0.5)
     st.plotly_chart(fig17, use_container_width=True)
-    st.caption("🔎 Insight: Fare generally increases with distance but with variability.")
+    st.caption("🔎 Insight: Booking value generally rises with ride distance, but short-distance rides can also have high fares due to vehicle type or surge pricing.")
+
 
     # 18. Incomplete Rides by Reason
     incomplete = df_filtered[df_filtered["Incomplete_Rides"]=="Yes"]["Incomplete_Rides_Reason"].value_counts().reset_index()
     incomplete.columns = ["Reason", "count"]
     fig18 = px.bar(incomplete, x="Reason", y="count", title="Reasons for Incomplete Rides")
     st.plotly_chart(fig18, use_container_width=True)
-    st.caption("🔎 Insight: Vehicle breakdowns and customer demand are leading causes.")
+    st.caption("🔎 Insight: Incomplete rides mainly occur due to vehicle issues or ride cancellations by driver/customer.")
+
+
 
     # 19. Top Customers by Ride Count
     top_cust = df_filtered["Customer_ID"].value_counts().head(10).reset_index()
     top_cust.columns = ["Customer_ID", "count"]
     fig19 = px.bar(top_cust, x="Customer_ID", y="count", title="Top 10 Customers by Ride Count")
     st.plotly_chart(fig19, use_container_width=True)
-    st.caption("🔎 Insight: Very few customers are repeat riders.")
+    st.caption("🔎 Insight: Most customers take few rides, while a small set of customers account for multiple bookings.")
+
 
     # 20. Avg Booking Value by Payment Method
     avg_payment = df_filtered.groupby("Payment_Method")["Booking_Value"].mean().reset_index()
     fig20 = px.bar(avg_payment, x="Payment_Method", y="Booking_Value", title="Avg Booking Value by Payment Method")
     st.plotly_chart(fig20, use_container_width=True)
-    st.caption("🔎 Insight: UPI and Credit Card transactions have higher booking values.")
+    st.caption("🔎 Insight: UPI and Credit Card payments tend to have higher average booking values; Cash is common but lower value on average.")
+
 
 
 
@@ -291,10 +328,11 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - Out of **103,024 rides**, only **62% were successful**.
-        - **38% cancellations** (Driver: 18k, Customer: 10k, Driver Not Found: 10k).
-        - High cancellation rate is a **critical operational issue**.
+        - Out of **99,109 rides**, **62% were successful**; cancellations are **38%**.
+        - Cancellations: Driver ~17.7k, Customer ~10k, Driver Not Found ~9.7k.
+        - **High cancellation rate** indicates operational and demand-supply challenges.
         """)
+
 
     # 2. Cancellation Reasons by Driver
     driver_reasons = df["Canceled_Rides_by_Driver"].value_counts().head(5).reset_index()
@@ -306,9 +344,10 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - Top reasons: **Personal/Car issues (6.5k)**, **Customer issues (5.4k)**, **Health-related (3.6k)**.
-        - Indicates gaps in **driver support & backup fleet availability**.
+        - Top reasons: **Personal/Car issues (6.2k)**, **Customer issues (5.2k)**, **Health (3.5k)**.
+        - Highlights need for **better driver support, backup fleet, and training**.
         """)
+
 
     # 3. Cancellation Reasons by Customer
     cust_reasons = df["Canceled_Rides_by_Customer"].value_counts().head(5).reset_index()
@@ -320,9 +359,10 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - Main reasons: **Driver not moving (3.1k)**, **Driver asked to cancel (2.6k)**, **Change of plans (2k)**.
-        - These highlight **driver behavior issues** and need for **better route compliance**.
+        - Main reasons: **Driver not moving (3k)**, **Driver asked to cancel (2.5k)**, **Change of plans (2k)**.
+        - Suggests **driver punctuality and communication** improvements are required.
         """)
+
 
     # 4. Revenue by Vehicle Type
     revenue_vehicle = df.groupby("Vehicle_Type")["Booking_Value"].sum().reset_index()
@@ -333,9 +373,10 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - **Prime Sedan, eBike, Auto, Prime Plus** dominate total revenue.
-        - Premium vehicles bring **higher ticket sizes**, while 2/3-wheelers bring **high frequency**.
+        - **Prime Sedan, eBike, Auto, Prime Plus** generate majority revenue.
+        - Premium vehicles have **higher fares**, while 2/3-wheelers contribute **high frequency rides**.
         """)
+
 
     # 5. Weekly Revenue Trends
     weekly_rev = df.groupby("Ride_Week")["Booking_Value"].sum().reset_index()
@@ -346,10 +387,11 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - Revenue is **consistent across weeks** (~12.7M per week).
+        - Revenue is **stable across weeks (~12–13M/week)**.
         - Week 31 shows a dip (**seasonality/holidays**).
-        - Indicates **stable demand with periodic dips**.
+        - Indicates **stable demand with occasional fluctuations**.
         """)
+
 
     # 6. Distance vs Fare Scatter
     fig6 = px.scatter(df, x="Ride_Distance", y="Booking_Value", title="Distance vs Fare")
@@ -359,9 +401,10 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - Correlation is almost **zero (0.0005)**.
-        - Suggests **pricing is not distance-driven** but **dynamic surge/vehicle-based**.
+        - Correlation between distance and fare is **almost zero (0.0005)**.
+        - Pricing depends more on **vehicle type, surge pricing, and demand**, not distance alone.
         """)
+
 
     # 7. Top Pickup Locations (Cancellations)
     cancel_pickups = df[df["Booking_Status"].str.contains("Canceled", na=False)]["Pickup_Location"].value_counts().head(10).reset_index()
@@ -374,8 +417,9 @@ elif page == "Insights & Recommendations":
         st.subheader("Insights")
         st.write("""
         - **Vijayanagar, Whitefield, Tumkur Road** are top cancellation hotspots.
-        - Indicates **mismatch of supply-demand** in these areas.
+        - Indicates **supply-demand mismatch** in these areas during peak hours.
         """)
+
 
     # 8. Driver Ratings Distribution
     fig8 = px.histogram(df, x="Driver_Ratings", nbins=20, title="Driver Ratings Distribution")
@@ -385,9 +429,10 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - Ratings are **centered around 4.0**.
-        - Indicates **service quality is consistent but not exceptional**.
+        - Driver ratings are mostly around **4.0**.
+        - Service is **consistent**, but some drivers may require **performance support**.
         """)
+
 
     # 9. Customer Ratings Distribution
     fig9 = px.histogram(df, x="Customer_Rating", nbins=20, title="Customer Ratings Distribution")
@@ -397,9 +442,10 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - Customers also average around **4.0**.
-        - Balanced ratings → indicates **both driver & customer expectations need work**.
+        - Customer ratings also center around **4.0**.
+        - Balanced ratings suggest **both driver and customer experience** can be improved.
         """)
+
 
     # 10. High Value Customers
     high_value = df.groupby("Customer_ID")["Booking_Value"].sum().sort_values(ascending=False).head(10).reset_index()
@@ -410,9 +456,10 @@ elif page == "Insights & Recommendations":
     with col2:
         st.subheader("Insights")
         st.write("""
-        - A handful of **loyal customers contribute disproportionately** to revenue.
-        - Opportunity to **launch loyalty programs**.
+        - A few **loyal customers contribute disproportionately** to revenue.
+        - Opportunity for **loyalty programs, personalized offers, and retention campaigns**.
         """)
+
 
     # ---- Embed Power BI Dashboard ----
     st.subheader("Interactive Power BI Dashboard")
@@ -423,12 +470,24 @@ elif page == "Insights & Recommendations":
     )
 
     # ---- Recommendations Section ----
-    st.header("✅ Recommendations")
-    st.markdown("""
-    - **Reduce Driver Cancellations**: Incentives, vehicle support, backup fleet.
-    - **Curb Customer Cancellations**: Improve ETA accuracy, penalize frequent cancellations.
-    - **Optimize Hotspots**: More driver allocation in **Vijayanagar, Whitefield, Tumkur Road**.
-    - **Pricing Strategy**: Consider **distance + dynamic** pricing to make fares fairer.
-    - **Customer Loyalty**: Special offers for top customers (retention strategy).
-    - **Service Quality**: Training for drivers, feedback loop to lift average ratings.
+    st.subheader("💡 Actionable Recommendations")
+    st.write("""
+    - **Reduce cancellations**:
+      - Improve driver availability and route compliance.
+      - Implement backup fleet support in high-demand zones.
+    - **Optimize vehicle allocation**:
+      - Focus premium vehicles on longer-distance rides to increase revenue.
+      - Assign frequent 2/3-wheelers to short-distance, high-demand zones.
+    - **Promote digital payments**:
+      - Encourage UPI/Credit Card usage to increase average booking value.
+    - **Customer retention**:
+      - Launch loyalty programs targeting high-value and repeat customers.
+      - Offer personalized promotions to top riders.
+    - **Driver performance & quality**:
+      - Conduct training and performance monitoring for low-rated drivers.
+      - Incentivize top drivers to maintain high service standards.
+    - **Demand forecasting & operational planning**:
+      - Monitor peak hours and high-demand locations for better supply planning.
+      - Adjust dynamic pricing or incentives based on ride volume patterns.
     """)
+
